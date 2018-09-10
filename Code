@@ -1,0 +1,182 @@
+Paid Search Bid Optimization Exercise
+
+
+#----------------------------PART A---------------------------------------
+setwd("E:/410-Customer Analytics/Week-8")
+library(readxl)
+kw28=read.csv("clicksdata.kw8322228.csv")
+kw92=read.csv("clicksdata.kw8322392.csv")
+kw93=read.csv("clicksdata.kw8322393.csv")
+kw45=read.csv("clicksdata.kw8322445.csv")
+View(kw45)
+
+
+#I should note however that that while I set the 
+#initial values of alpha and beta to 150 and 0.5 
+#respectively, any  initial values are not always 
+#guaranteed to work, or, if they work they may not 
+#lead to the global least-squares minimizer. 
+#A not of caution with nonlinear regression is that 
+#one may need to try multiple starting values.
+
+#------------------kw28------------------------------------
+nls(n.clicks ~ alpha*(1-exp(-beta*bid.value)), data=kw28, start=list(alpha=150,beta=0.5))
+
+#try different starting value
+nls(n.clicks ~ alpha*(1-exp(-beta*bid.value)), data=kw28, start=list(alpha=100,beta=0.1))
+
+#try different starting value
+nls(n.clicks ~ alpha*(1-exp(-beta*bid.value)), data=kw28, start=list(alpha=50,beta=0.05))
+
+
+#--------------------kw92--------------------------------------
+nls(n.clicks ~ alpha*(1-exp(-beta*bid.value)), data=kw92, start=list(alpha=150,beta=0.5))
+
+#try different starting value
+nls(n.clicks ~ alpha*(1-exp(-beta*bid.value)), data=kw92, start=list(alpha=100,beta=0.1))
+
+#try different starting value
+nls(n.clicks ~ alpha*(1-exp(-beta*bid.value)), data=kw92, start=list(alpha=500,beta=0.05))
+
+
+#--------------------kw93--------------------------------------
+nls(n.clicks ~ alpha*(1-exp(-beta*bid.value)), data=kw93, start=list(alpha=150,beta=0.2))
+
+#try different starting value
+nls(n.clicks ~ alpha*(1-exp(-beta*bid.value)), data=kw93, start=list(alpha=100,beta=0.1))
+
+#try different starting value
+nls(n.clicks ~ alpha*(1-exp(-beta*bid.value)), data=kw93, start=list(alpha=500,beta=0.05))
+
+
+#--------------------kw45--------------------------------------
+nls(n.clicks ~ alpha*(1-exp(-beta*bid.value)), data=kw45, start=list(alpha=150,beta=0.5))
+
+#try different starting value
+nls(n.clicks ~ alpha*(1-exp(-beta*bid.value)), data=kw45, start=list(alpha=100,beta=0.1))
+
+#try different starting value
+nls(n.clicks ~ alpha*(1-exp(-beta*bid.value)), data=kw45, start=list(alpha=500,beta=1))
+
+
+#========================Part B1===================================
+
+#-------------------------kw28------------------------
+profit_overall_1 = function(bid_value) {
+  po = 74.09140*(1-exp(-0.03945*bid_value))*(354*0.3-bid_value)
+                 
+  return(-po)
+  
+}
+
+optim(50,profit_overall_1,gr=NULL,method="L-BFGS-B", lower = 0) #L-BFGS-B BFGS
+
+total_exp_1 = 34.12732*74.09140*(1-exp(-0.03945*34.12732))
+total_exp_1
+
+#---------------------kw92--------------------------
+profit_overall_2 = function(bid_value) {
+  po = 156.4398*(1-exp(-0.1501*bid_value))*(181*0.32-bid_value)
+  
+  return(-po)
+  
+}
+
+optim(50,profit_overall_2,gr=NULL,method="L-BFGS-B", lower = 0) #L-BFGS-B BFGS
+
+total_exp_2 = 13.56266*156.4398*(1-exp(-0.1501*13.56266))
+total_exp_2
+
+#---------------------kw93--------------------------
+profit_overall_3 = function(bid_value) {
+  po = 104.79935*(1-exp(-0.07972*bid_value))*(283*0.3-bid_value)
+  
+  return(-po)
+  
+}
+
+optim(50,profit_overall_3,gr=NULL,method="L-BFGS-B", lower = 0) #L-BFGS-B BFGS
+
+total_exp_3 = 22.43343*104.79935*(1-exp(-0.07972*22.43343))
+total_exp_3
+
+
+#---------------------kw45--------------------------
+profit_overall_4 = function(bid_value) {
+  po = 188.1117*(1-exp(-0.4323*bid_value))*(107*0.3-bid_value)
+  
+  return(-po)
+  
+}
+
+optim(50,profit_overall_4,gr=NULL,method="L-BFGS-B", lower = 0) #L-BFGS-B BFGS
+
+total_exp_4 = 5.816892*188.1117*(1-exp(-0.4323*5.816892))
+total_exp_4
+
+#========================Part B2===================================
+#install.packages("Rsolnp")
+library(Rsolnp)
+
+profit_total = function(bid_value) {
+  ptotal = 74.09140*(1-exp(-0.03945*bid_value[1]))*(354*0.3-bid_value[1])
+           + 156.4398*(1-exp(-0.1501*bid_value[2]))*(181*0.32-bid_value[2])
+           + 104.79935*(1-exp(-0.07972*bid_value[3]))*(283*0.3-bid_value[3])
+           + 188.1117*(1-exp(-0.4323*bid_value[4]))*(107*0.3-bid_value[4])
+  
+  return(-ptotal)
+  
+}
+
+total_exp = function(bid_value){
+  total_exp_1 = bid_value[1]*74.09140*(1-exp(-0.03945*bid_value[1]))
+  total_exp_2 = bid_value[2]*156.4398*(1-exp(-0.1501*bid_value[2]))
+  total_exp_3 = bid_value[3]*104.79935*(1-exp(-0.07972*bid_value[3]))
+  total_exp_4 = bid_value[4]*188.1117*(1-exp(-0.4323*bid_value[4]))
+  
+  exptotal = total_exp_1+total_exp_2+total_exp_3+total_exp_4
+  
+  return(exptotal)
+  
+}
+
+
+bid_value_start = c(5,5,5,5)
+solnp(bid_value_start, profit_total, 
+      eqfun=total_exp, eqB=3000, LB=c(0,0,0,0), UB=c(3000, 3000, 3000, 3000))
+
+#optimal_bids = c(3.412731e+01,
+# 4.247440e-05, 5.226825e-03, 6.405489e+00)
+
+profit_overall_1(17.924259) #3315.588
+profit_overall_2(8.118448) #5487.552
+profit_overall_3(12.828280) #4836.734
+profit_overall_4(3.775706) #4286.526
+
+bid_v=c(17.924259,8.118448, 12.828280, 3.775706)
+
+total_exp_1 = bid_v[1]*74.09140*(1-exp(-0.03945*bid_v[1]))
+total_exp_2 = bid_v[2]*156.4398*(1-exp(-0.1501*bid_v[2]))
+total_exp_3 = bid_v[3]*104.79935*(1-exp(-0.07972*bid_v[3]))
+total_exp_4 = bid_v[4]*188.1117*(1-exp(-0.4323*bid_v[4]))
+
+total_exp_1 #673.2252
+total_exp_2 #894.5586
+total_exp_3 #860.9061
+total_exp_4 #571.4057
+
+sum(total_exp_1, total_exp_2, total_exp_3, total_exp_4) #3000
+
+expenditure_1 = c(1870.626,	1844.679,	1957.853,	1005.712)
+expenditure_2 = c(673.2252,	894.5586,	860.9061,	571.4057)
+
+exp_reduction = (expenditure_1 - expenditure_2)/expenditure_1
+exp_reduction
+
+
+kw28$profit = -profit_overall_1(kw28$bid.value)
+kw92$profit = -profit_overall_2(kw92$bid.value)
+kw93$profit = -profit_overall_3(kw93$bid.value)
+kw45$profit = -profit_overall_4(kw45$bid.value)
+
+
